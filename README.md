@@ -43,7 +43,7 @@ Al publicar cambios en `app/www`, sube `VERSION` en `app/www/sw.js`.
 ```sh
 cd rutina
 ./mvnw test
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev   # H2 en memoria, códigos en la consola
+./mvnw spring-boot:run   # modo desarrollo: H2 en memoria, códigos en la consola
 ```
 
-Con MySQL y correo: copia `.env.example` a `.env`, rellénalo y ejecuta `docker compose up --build`. En producción hace falta HTTPS por delante.
+Con MySQL y correo (perfil `prod`, obligatorio en producción): copia `.env.example` a `.env`, rellénalo y ejecuta `docker compose up --build`. En producción hace falta HTTPS por delante.
