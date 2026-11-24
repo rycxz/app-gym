@@ -1,0 +1,26 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: rutinagym
+      MYSQL_USER: rutina
+      MYSQL_PASSWORD: ${DB_PASSWORD:?copia .env.example a .env}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    volumes: ["db:/var/lib/mysql"]
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -urutina -p$$MYSQL_PASSWORD"]
+      interval: 5s
+      retries: 20
+  web:
+    build: { context: ., dockerfile: rutina/Dockerfile }
+    depends_on: { db: { condition: service_healthy } }
+    ports: ["8080:8080"]
+    environment:
+      DB_HOST: db
+      DB_USER: rutina
+      DB_PASSWORD: ${DB_PASSWORD}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+volumes:
+  db:
