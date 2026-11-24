@@ -1,0 +1,31 @@
+name: Pruebas y publicación
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    permissions: { contents: read }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm test
+        working-directory: app
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17, cache: maven }
+      - run: mvn -q -B test
+        working-directory: rutina
+  pages:
+    if: github.event_name == 'push'
+    needs: pruebas
+    runs-on: ubuntu-latest
+    permissions: { pages: write, id-token: write, contents: read }
+    environment: { name: github-pages, url: "${{ steps.d.outputs.page_url }}" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: app/www }
+      - id: d
+        uses: actions/deploy-pages@v4
