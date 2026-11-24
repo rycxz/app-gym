@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RutinaGym</string>
+    <string name="title_activity_main">RutinaGym</string>
+    <string name="package_name">com.ricardoporaqui.rutinagym</string>
+    <string name="custom_url_scheme">com.ricardoporaqui.rutinagym</string>
+</resources>
