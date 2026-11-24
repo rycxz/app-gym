@@ -1,0 +1,10 @@
+{
+  "name": "RutinaGym", "short_name": "RutinaGym", "lang": "es", "id": "./", "start_url": "./", "scope": "./",
+  "display": "standalone", "orientation": "portrait", "background_color": "#111412", "theme_color": "#111412",
+  "description": "Tu cuaderno de gimnasio: rutinas, pesos y progreso, sin conexión.",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

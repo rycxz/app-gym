@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>RutinaGym</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'">
+<meta name="description" content="Tu cuaderno de gimnasio: rutinas, pesos y progreso, sin conexión.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#111412" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f5f0" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RutinaGym">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app.css">
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+<main id="view" tabindex="-1"><noscript>RutinaGym necesita JavaScript.</noscript></main>
+<aside id="rest" hidden aria-label="Descanso">
+  <button type="button" data-act="restAdd" data-s="-15" aria-label="Quitar 15 segundos">−15</button>
+  <output aria-live="off">0:00</output>
+  <button type="button" data-act="restAdd" data-s="15" aria-label="Añadir 15 segundos">+15</button>
+  <button type="button" data-act="restStop">Saltar</button>
+</aside>
+<nav id="nav" aria-label="Principal"></nav>
+<div id="toast" role="status"></div>
+<datalist id="exs"></datalist>
+</body>
+</html>
