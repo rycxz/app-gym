@@ -3,7 +3,6 @@ import { state, save, touch, replaceState, onSaveError } from './store.js';
 import { html, icon, toast, dialog, confirmar, exportFile, shareText } from './ui.js';
 import * as T from './timer.js';
 import { EXERCISES, TEMPLATES } from './data.js';
-import { cloud, api, probe, sync } from './cloud.js';
 
 const view = document.getElementById('view');
 const $ = s => document.querySelector(s);
@@ -193,7 +192,6 @@ function vAjustes() {
     <label class="field">Descanso entre series<select data-in="cfgrest">${[0, 30, 45, 60, 75, 90, 120, 150, 180, 240, 300].map(v => html`<option value="${v}" ${v === s.rest ? html`selected` : ''}>${v ? (v < 60 ? `${v} s` : `${Math.floor(v / 60)} min${v % 60 ? ` ${v % 60} s` : ''}`) : 'Sin temporizador'}</option>`)}</select></label>
     <label class="switch"><input type="checkbox" data-in="cfgsound" ${s.sound ? html`checked` : ''}> Sonido al acabar el descanso</label>
     <div class="accents" role="group" aria-label="Color">${Object.entries(ACCENTS).map(([k, c]) => html`<button data-act="accent" data-k="${k}" aria-label="Color ${k}" aria-pressed="${s.accent === k}" style="--c:${c}"></button>`)}</div></section>
-  ${cloud.available ? html`<section class="card"><h2>Copia en la nube</h2>${cloud.user ? html`<p class="muted">Sesión iniciada como ${cloud.user.email}</p><button class="btn" data-act="sync">Sincronizar ahora</button><button class="btn ghost" data-act="logout">Cerrar sesión</button>` : html`<p class="muted">Opcional: guarda tus datos en tu cuenta.</p><button class="btn" data-act="login">Entrar</button><button class="btn ghost" data-act="register">Crear cuenta</button><button class="btn ghost" data-act="forgot">He olvidado la contraseña</button>`}</section>` : ''}
   <section class="card"><h2>Copia de seguridad</h2><p class="muted">Tus datos viven solo en este móvil. Guarda una copia de vez en cuando y siempre antes de cambiar de móvil o desinstalar.</p>
     <button class="btn" data-act="backup">Guardar copia</button>
     <label class="btn ghost filebtn">Restaurar copia<input type="file" accept=".json,application/json" data-in="restore"></label></section>
@@ -236,10 +234,6 @@ async function begin(s) {
   state.current = s; save(); go('#/entreno');
 }
 const ask = (title, body, ok) => dialog(title, body, [{ value: 'ok', label: ok }, { value: '', label: 'Cancelar', cls: 'ghost', cancel: true }]);
-const cloudTry = async (fn, okMsg) => { try { await fn(); if (okMsg) toast(okMsg); render(); return true; } catch (e) { toast(e.message); return false; } };
-const pw = (name, label, auto) => html`<label class="field">${label}<input type="password" name="${name}" autocomplete="${auto}" minlength="8" maxlength="72" required></label>`;
-const mail = html`<label class="field">Correo<input type="email" name="email" autocomplete="email" required></label>`;
-const codeIn = html`<label class="field">Código del correo<input name="codigo" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" required autofocus></label>`;
 const swap = (a, i) => { [a[i - 1], a[i]] = [a[i], a[i - 1]]; };
 
 const ACT = {
@@ -327,7 +321,6 @@ const ACT = {
     go(`#/sesion/${f.id}`);
     const prs = f.exercises.flatMap(e => e.sets).filter(s => s.pr).length;
     toast(prs ? `Entreno guardado con ${prs} ${prs === 1 ? 'récord' : 'récords'}` : 'Entreno guardado');
-    if (cloud.user) sync().catch(() => toast('Guardado aquí; la nube se actualizará luego'));
   },
   async discard() { if (await confirmar('¿Descartar el entreno?', 'Se pierde lo apuntado hoy.', 'Descartar')) { state.current = null; save(); go('#/'); } },
   restAdd: d => T.addRest(+d.s),
@@ -341,25 +334,6 @@ const ACT = {
   backup: () => exportFile(`rutinagym-${new Date().toLocaleDateString('sv')}.json`, JSON.stringify(state)),
   async wipe() { if (await confirmar('¿Borrar todo?', 'Rutinas, entrenos y ajustes de este móvil. No se puede deshacer.', 'Borrar todo')) { replaceState(L.emptyState()); go('#/'); } },
   install: async () => { installEvt?.prompt(); installEvt = null; },
-
-  sync: () => cloudTry(sync, 'Sincronizado'),
-  logout: () => cloudTry(async () => { await api('POST', 'auth/logout'); await probe(); }, 'Sesión cerrada'),
-  async login() {
-    const { action, data } = await ask('Entrar', html`${mail}${pw('password', 'Contraseña', 'current-password')}`, 'Entrar');
-    if (action === 'ok') await cloudTry(async () => { await api('POST', 'auth/login', data); await probe(); await sync(); }, 'Sesión iniciada');
-  },
-  async register() {
-    const { action, data } = await ask('Crear cuenta', html`${mail}${pw('password', 'Contraseña (mínimo 8)', 'new-password')}`, 'Enviarme el código');
-    if (action !== 'ok' || !await cloudTry(() => api('POST', 'auth/register', data))) return;
-    const v = await ask('Revisa tu correo', codeIn, 'Verificar');
-    if (v.action === 'ok') await cloudTry(async () => { await api('POST', 'auth/verify', { ...data, codigo: v.data.codigo }); await probe(); await sync(); }, 'Cuenta creada');
-  },
-  async forgot() {
-    const { action, data } = await ask('Recuperar contraseña', mail, 'Enviarme el código');
-    if (action !== 'ok' || !await cloudTry(() => api('POST', 'auth/forgot', data))) return;
-    const v = await ask('Nueva contraseña', html`${codeIn}${pw('password', 'Contraseña nueva', 'new-password')}`, 'Cambiar');
-    if (v.action === 'ok') await cloudTry(() => api('POST', 'auth/reset', { ...data, ...v.data }), 'Contraseña cambiada. Ya puedes entrar');
-  },
 };
 
 /* ---------- Campos ---------- */
@@ -417,8 +391,3 @@ onSaveError(() => toast('No se pudo guardar: el móvil no tiene espacio'));
 render();
 navigator.storage?.persist?.();
 if ('serviceWorker' in navigator && !window.Capacitor?.isNativePlatform?.()) navigator.serviceWorker.register('sw.js').catch(console.error);
-probe().then(async () => {
-  if (cloud.user) await sync().catch(() => {});
-  const el = document.activeElement;
-  if (cloud.available && !document.querySelector('dialog') && !el?.matches('input,textarea,select')) render();
-});

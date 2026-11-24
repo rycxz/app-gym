@@ -9,5 +9,5 @@ createServer(async (q, r) => {
   const p = decodeURIComponent(new URL(q.url, 'http://x').pathname);
   const f = normalize(join(ROOT, p === '/' ? 'index.html' : p));
   if (!f.startsWith(ROOT + sep)) return r.writeHead(403).end();
-  try { const b = await readFile(f); r.writeHead(200, { 'Content-Type': T[extname(f)] ?? 'application/octet-stream' }).end(b); } catch { r.writeHead(404).end(); }
+  try { const b = await readFile(f); r.writeHead(200, { 'Content-Type': T[extname(f)] ?? 'application/octet-stream', Vary: 'Origin' }).end(b); } catch { r.writeHead(404).end(); }
 }).listen(port, '127.0.0.1', () => console.log(`http://localhost:${port}`));

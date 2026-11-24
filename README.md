@@ -38,12 +38,12 @@ Al publicar cambios en `app/www`, sube `VERSION` en `app/www/sw.js`.
 
 ## Servidor opcional
 
-`rutina/` es un backend de Spring Boot (Java 17) con cuentas y copia en la nube. La app no lo necesita; si se abre desde él, aparece «Copia en la nube» en Ajustes.
+`rutina/` es un servidor Spring Boot (Java 17) que sirve la app. No tiene cuentas ni base de datos: los datos se quedan en cada móvil. Con GitHub Pages basta; esto es por si quieres desplegarla en tu servidor o en Google Cloud Run.
 
 ```sh
 cd rutina
+./mvnw spring-boot:run   # http://localhost:8080
 ./mvnw test
-./mvnw spring-boot:run   # modo desarrollo: H2 en memoria, códigos en la consola
 ```
 
-Con MySQL y correo (perfil `prod`, obligatorio en producción): copia `.env.example` a `.env`, rellénalo y ejecuta `docker compose up --build`. En producción hace falta HTTPS por delante.
+Con Docker, desde la raíz: `docker build -f rutina/Dockerfile -t rutinagym .` y `docker run -p 8080:8080 rutinagym`. Para instalarla en el móvil hace falta HTTPS.
